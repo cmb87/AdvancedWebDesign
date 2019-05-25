@@ -57,13 +57,22 @@ class Cube(object):
         mystl.y = 3 * ((mystl.y - mystl.y.min()) / (xmax - xmin) - 0.5)
         mystl.z = 3 * ((mystl.z - mystl.z.min()) / (xmax - xmin) - 0.5)
 
-        nvertices = mystl.vectors.shape[0] * mystl.vectors.shape[1]
+        xaxis = np.asarray([0, 0, 0, 0, 0, 0.1, 2, 0, 0])
+        colorx = np.asarray([1, 0, 0, 1, 0, 0, 1, 0, 0])
+        yaxis = np.asarray([0, 0, 0, 0.1, 0, 0, 0, 2, 0])
+        colory = np.asarray([1, 0, 0, 1, 0, 0, 1, 0, 0])
+        zaxis = np.asarray([0, 0, 0, 0.1, 0, 0, 0, 0, 2])
+        colorz = np.asarray([1, 0, 0, 1, 0, 0, 1, 0, 0])
+
+        nvertices = mystl.vectors.shape[0] * mystl.vectors.shape[1] + 3 + 3 + 3
         vertices = mystl.vectors.flatten()
+        vertices = np.hstack((vertices, xaxis, yaxis, zaxis))
 
         def cstm_autumn_r(x):
             return plt.cm.autumn_r((np.clip(x, 2, 10) - 2) / 8.)[:, :3].flatten()
 
         colors = cstm_autumn_r(np.linspace(2, 10, nvertices))  # np.ones(vertices.shape[0])
+        colors = np.hstack((colors, colorx, colory, colorz))
 
         return pd.Series(vertices).to_json(orient='values'), nvertices, pd.Series(colors).to_json(orient='values')
 

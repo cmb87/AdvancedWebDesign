@@ -1,8 +1,9 @@
 import sys
 import os
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, request, jsonify
 from stl import mesh
 import json
+import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../'))
 
@@ -25,6 +26,30 @@ def home():
 @app.route('/d3basic')
 def d3basic():
     return render_template('d3/basic.html')
+
+
+@app.route('/d3contour')
+def d3contourplot():
+    return render_template('d3/contourplot.html')
+
+
+@app.route('/getData', methods=['GET', 'POST'])
+def sendData():
+    if request.method == 'POST':
+
+        X = np.linspace(0, 5, 40)
+        Y = np.sin(X)
+        Z = np.sin(X)
+
+        data = []
+        for x, y, z in zip(X.tolist(), Y.tolist(), Z.tolist()):
+            data.append({"x": x, "y": y, "z": z})
+
+        return jsonify(values=data, width=800, height=200)
+
+    else:
+        return render_template('starfield/starfield.html')
+
 
 # https://www.tutorialspoint.com/webgl/webgl_cube_rotation.htm
 # https://www.tutorialspoint.com/webgl/webgl_drawing_a_model.htm

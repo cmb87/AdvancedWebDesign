@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <script type = "text/javascript" src = "https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-contour.v1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+ </head>
+
+ <body>
+    <div id="my_dataviz"></div>
+    <button>Get External Content</button>
+    <div id="my_dataviz2"></div>
+
+<script>
+
+$(document).ready(function(){
+  $("button").click(function(){
+    $.ajax({
+            type: "POST",
+            url: '/getData',
+            success: function (data) {
+               var pos_data = data;
+               div_name = "#my_dataviz";
+               draw_contourplot(div_name, pos_data);
+            },
+            error: function (result) {
+            }
+    });
+  });
+});
+  // read data
+  //d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/data_for_density2d.csv", function(data) {
+  function draw_contourplot(reference, data){
+
+    //Attempt to get the element using document.getElementById
+    var element = document.getElementsByClassName("myplot");
+
+    //If it isn't "undefined" and it isn't "null", then it exists.
+    if(typeof(element) != 'undefined' && element != null){
+        alert('Element exists! ==> Will remove it!');
+        d3.select("svg").remove();
+    } else{
+        alert('Element does not exist!');
+    }
+
+    // set the dimensions and margins of the graph
+    var ScaleX = d3.scaleLinear()
+                 .domain([d3.min(data.values, function (d) {return d.x}), d3.max(data.values, function (d) {return d.x})])
+                 .range([0, data.width]);
+
+    var ScaleY = d3.scaleLinear()
+                 .domain([d3.min(data.values, function (d) {return d.y}), d3.max(data.values, function (d) {return d.y})])
+                 .range([0, data.height]);
+
+    // create svg element:
+    var svg = d3.select(reference)
+              .append("svg")
+              .attr("width", data.width)
+              .attr("height", data.height)
+              .attr("class", "myplot");
+
+    // prepare a helper function
+    var lineFunc = d3.line()
+      .x(function(d) { return ScaleX(d.x) })
+      .y(function(d) { return ScaleY(d.y) });
+
+    // prepare a helper function
+    var curveFunc = d3.area()
+      .x(function(d) { return ScaleX(d.x) })      // Position of both line breaks on the X axis
+      .y1(function(d) { return ScaleY(d.y) })     // Y position of top line breaks
+      .y0(ScaleY(0));                            // Y position of bottom line breaks (200 = bottom of svg area)
+
+
+    // Add the path using this helper function
+    svg.append('path')
+      .attr('d', curveFunc(data.values))
+      .attr('stroke', 'black')
+      .attr('fill', '#69b3a2');
+
+      //.attr('d', lineFunc(data.values))
+      //.attr('stroke', 'black')
+      //.attr('fill', 'none');
+
+    var xAxis = d3.axisBottom()
+         .scale(ScaleX);
+
+    svg.append("g")
+       .attr("class", "x_axis")
+       .attr("transform", "translate(0," + (data.height-20) + ")")
+       .call(xAxis);
+
+    svg.append("g")
+       .attr("class", "y_axis")
+       .attr("transform", "translate(50,0)")      // This controls the vertical position of the Axis
+       .call(d3.axisLeft(ScaleY));
+
+    // text label for the x axis
+    svg.append("text")
+        .attr("transform",
+              "translate(" + (data.width/2) + " ," +
+                             (data.height - 10) + ")")
+        .style("text-anchor", "middle")
+        .text("Date");
+
+  };
+  </script>
+ </body>
+</html>
