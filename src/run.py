@@ -33,6 +33,36 @@ def d3contourplot():
     return render_template('d3/contourplot.html')
 
 
+@app.route('/getDataContour', methods=['GET', 'POST'])
+def sendDataContour():
+    if request.method == 'POST':
+
+        def f(x, y):
+            return np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)
+
+        x = np.linspace(0, 5, 50)
+        y = np.linspace(0, 5, 40)
+
+        X, Y = np.meshgrid(x, y)
+        X, Y = X.flatten(), Y.flatten()
+        Z = f(X, Y)
+
+        levels = np.linspace(Z.min(), Z.max(), 11).tolist()
+        data = []
+        for x, y, z in zip(X.tolist(), Y.tolist(), Z.tolist()):
+            data.append({"x": x, "y": y, "z": z})
+
+        return jsonify(values=data, width=800, height=200, levels=levels)
+
+    else:
+        return "Aint workin"
+
+
+@app.route('/d3line')
+def d3line():
+    return render_template('d3/line.html')
+
+
 @app.route('/getData', methods=['GET', 'POST'])
 def sendData():
     if request.method == 'POST':
@@ -48,7 +78,7 @@ def sendData():
         return jsonify(values=data, width=800, height=200)
 
     else:
-        return render_template('starfield/starfield.html')
+        return "Aint workin"
 
 
 # https://www.tutorialspoint.com/webgl/webgl_cube_rotation.htm

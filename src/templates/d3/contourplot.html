@@ -17,7 +17,7 @@ $(document).ready(function(){
   $("button").click(function(){
     $.ajax({
             type: "POST",
-            url: '/getData',
+            url: '/getDataContour',
             success: function (data) {
                var pos_data = data;
                div_name = "#my_dataviz";
@@ -44,63 +44,60 @@ $(document).ready(function(){
     }
 
     // set the dimensions and margins of the graph
-    var ScaleX = d3.scaleLinear()
-                 .domain([d3.min(data.values, function (d) {return d.x}), d3.max(data.values, function (d) {return d.x})])
-                 .range([0, data.width]);
-
-    var ScaleY = d3.scaleLinear()
-                 .domain([d3.min(data.values, function (d) {return d.y}), d3.max(data.values, function (d) {return d.y})])
-                 .range([0, data.height]);
+    var margin = {top: 20, right: 30, bottom: 30, left: 40},
+        width = data.width - margin.left - margin.right,
+        height = data.height - margin.top - margin.bottom;
 
     // create svg element:
     var svg = d3.select(reference)
               .append("svg")
-              .attr("width", data.width)
-              .attr("height", data.height)
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform",
+                      "translate(" + margin.left + "," + margin.top + ")")
               .attr("class", "myplot");
 
-    // prepare a helper function
-    var lineFunc = d3.line()
-      .x(function(d) { return ScaleX(d.x) })
-      .y(function(d) { return ScaleY(d.y) });
+    // Axis and Scalers
+    var ScaleX = d3.scaleLinear()
+                 .domain([d3.min(data.values, function (d) {return d.x}), d3.max(data.values, function (d) {return d.x})])
+                 .range([0, width]);
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(ScaleX));
 
-    // prepare a helper function
-    var curveFunc = d3.area()
-      .x(function(d) { return ScaleX(d.x) })      // Position of both line breaks on the X axis
-      .y1(function(d) { return ScaleY(d.y) })     // Y position of top line breaks
-      .y0(ScaleY(0));                            // Y position of bottom line breaks (200 = bottom of svg area)
+    var ScaleY = d3.scaleLinear()
+                 .domain([d3.min(data.values, function (d) {return d.y}), d3.max(data.values, function (d) {return d.y})])
+                 .range([0, height]);
+    svg.append("g")
+      .call(d3.axisLeft(ScaleY));
 
 
-    // Add the path using this helper function
-    svg.append('path')
-      .attr('d', curveFunc(data.values))
-      .attr('stroke', 'black')
-      .attr('fill', '#69b3a2');
+    // Contour plot
+    var densityData = d3.contourDensity()
+        .x(function(d) { return ScaleX(d.x); })   // x and y = column name in .csv input data
+        .y(function(d) { return ScaleY(d.y); })
+        .size([width, height])
+        .bandwidth(20)    // smaller = more precision in lines = more lines
+        (data.values)
 
-      //.attr('d', lineFunc(data.values))
-      //.attr('stroke', 'black')
-      //.attr('fill', 'none');
+    var color = d3.scaleLog()
+      .domain(d3.extent(data.levels))
+      .interpolate(function() { return d3.interpolateYlGnBu; });
 
-    var xAxis = d3.axisBottom()
-         .scale(ScaleX);
+    var contours = d3.contours()
+      .size([width, height])
+      .thresholds(data.levels);
 
     svg.append("g")
-       .attr("class", "x_axis")
-       .attr("transform", "translate(0," + (data.height-20) + ")")
-       .call(xAxis);
-
-    svg.append("g")
-       .attr("class", "y_axis")
-       .attr("transform", "translate(50,0)")      // This controls the vertical position of the Axis
-       .call(d3.axisLeft(ScaleY));
-
-    // text label for the x axis
-    svg.append("text")
-        .attr("transform",
-              "translate(" + (data.width/2) + " ," +
-                             (data.height - 10) + ")")
-        .style("text-anchor", "middle")
-        .text("Date");
+        .attr("fill", "none")
+        .attr("stroke", "#fff")
+        .attr("stroke-opacity", 0.5)
+      .selectAll("path")
+      .data(contours)
+      .join("path")
+        .attr("fill", d => color(d.value))
+        .attr("d", d3.geoPath());
 
   };
   </script>
