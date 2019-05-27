@@ -6,6 +6,7 @@ import uuid
 class Database(object):
     def __init__(self):
         self.database = 'test.db'
+        self.columnNames = None
 
     def _checkIfTableExists(self, tablename):
         """
@@ -39,6 +40,7 @@ class Database(object):
         columns = ["{} {}".format(key, columnsdict[key]) for key in columnsdict.keys()]
 
         if not self._checkIfTableExists(tablename):
+            self.columnNames = list(columnsdict.keys())
             con = lite.connect(self.database)
             with con:
                 # From the connection, we get the cursor object. The cursor is used
@@ -48,21 +50,22 @@ class Database(object):
                 cur.execute("CREATE TABLE {}({})".format(tablename, ', '.join(columns)))
                 print("-> Table created!")
         else:
+            self.columnNames = self.getColumnNames(tablename)
             print("-> Table exists omitting!")
 
-    def insert(self, tablename, rows):
+    def insert(self, tablename, rows, columnNames=None):
         """
         Insert multiple entries
         """
-        for row in rows:
-            assert len(row) == len(rows[0]), "Warning entries don't match!"
         placeholder = ', '.join(len(rows[0]) * ['?'])
-
         con = lite.connect(self.database)
         with con:
             cur = con.cursor()
-            cur.executemany("INSERT INTO {} VALUES({})".format(tablename, placeholder), rows)
-            # self.lastRowID = cur.lastrowid
+            if isinstance(columnNames, type(None)):
+                cur.executemany("INSERT INTO {} VALUES({})".format(tablename, placeholder), rows)
+            elif isinstance(columnNames, list):
+                cur.executemany("INSERT INTO {}({}) VALUES({})".format(tablename, ", ".join(columnNames), placeholder), rows)
+                # self.lastRowID = cur.lastrowid
 
     def getColumnNames(self, tablename):
         """
@@ -75,7 +78,7 @@ class Database(object):
             cur.execute("SELECT * FROM {}".format(tablename))
             return cur.fetchone().keys()
 
-    def fetch(self, tablename, columns=None, query=None, mode="fetchall"):
+    def fetch(self, tablename, columns=None, query=None):
         """
         """
         columns = Database.columnsParser(columns)
@@ -84,18 +87,9 @@ class Database(object):
         con = lite.connect(self.database)
         with con:
             cur = con.cursor()
-            if mode == "fetchall":
-                con.row_factory = lite.Row
-                cur.execute("SELECT {} FROM {} {}".format(columns, tablename, query))
-                return cur.fetchall()
-            elif mode == "fetchone":
-                con.row_factory = lite.Row
-                cur.execute("SELECT {} FROM {} {}".format(columns, tablename, query))
-                return cur.fetchone()
-            elif mode == "update":
-                cur.execute("UPDATE {} SET price=? {}".format(tablename, query))
-            else:
-                print("Mode unknown")
+            con.row_factory = lite.Row
+            cur.execute("SELECT {} FROM {} {}".format(columns, tablename, query))
+            return cur.fetchall()
 
     def remove(self, tablename, query=None):
         """
@@ -138,14 +132,13 @@ class Database(object):
 if __name__ == "__main__":
     db = Database()
 
-    columns = {"id": "TEXT", "name": "TEXT", "price": "INT"}
+    columns = {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "name": "TEXT", "price": "INT"}
     db.delete_table("cars")
     db.create_table("cars", columns)
 
-    db.insert("cars", [(str(uuid.uuid4()), 'Audi', 52642),
-                       (str(uuid.uuid4()), 'BMW', 51642),
-                       (str(uuid.uuid4()), 'Hummer', 1642), ])
+    db.insert("cars", (("Audi", 3000), ("VW", 1000)), columnNames=["name", "price"])
+    db.insert("cars", ((5, "Hummer", 3000),))
 
     db.remove("cars", query="name = 'Hummer'")
-    rows = db.fetch("cars", columns=['name', 'id'], query="price < 200000")
+    rows = db.fetch("cars", columns=['name', 'rowid'], query="price < 200000")
     print(rows)
