@@ -3,6 +3,15 @@ import sys
 import uuid
 
 
+def qeq(key, val): return "({} = {})".format(key, val)
+
+
+def qgt(key, val): return "({} < {})".format(key, val)
+
+
+def qlt(key, val): return "({} lt {})".format(key, val)
+
+
 class Database(object):
     def __init__(self):
         self.database = 'test.db'
@@ -78,28 +87,41 @@ class Database(object):
             cur.execute("SELECT * FROM {}".format(tablename))
             return cur.fetchone().keys()
 
-    def fetch(self, tablename, columns=None, query=None):
+    def find_one(self, tablename, query):
         """
         """
-        columns = Database.columnsParser(columns)
-        query = Database.queryParser(query)
+
+        query = ' AND '.join(list(map(qeq, query.keys(), query.values())))
 
         con = lite.connect(self.database)
         with con:
-            cur = con.cursor()
             con.row_factory = lite.Row
-            cur.execute("SELECT {} FROM {} {}".format(columns, tablename, query))
+            cur = con.cursor()
+            cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, query))
+            return cur.fetchone()
+
+    def find_all(self, tablename, query):
+        """
+        """
+
+        query = ' AND '.join(list(map(qeq, query.keys(), query.values())))
+
+        con = lite.connect(self.database)
+        with con:
+            con.row_factory = lite.Row
+            cur = con.cursor()
+            cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, query))
             return cur.fetchall()
 
-    def remove(self, tablename, query=None):
+    def remove(self, tablename, query):
         """
         """
-        query = Database.queryParser(query)
+        query = ' AND '.join(list(map(qeq, query.keys(), query.values())))
 
         con = lite.connect(self.database)
         with con:
             cur = con.cursor()
-            cur.execute("DELETE FROM {} {}".format(tablename, query))
+            cur.execute("DELETE FROM {} WHERE {}".format(tablename, query))
 
     def getMetaData(self, tablename):
         """
@@ -112,33 +134,22 @@ class Database(object):
             data = cur.fetchall()
             return data
 
-    @staticmethod
-    def queryParser(query):
-        if isinstance(query, type(None)):
-            query = ''
-        elif isinstance(query, str):
-            query = 'WHERE ' + query
-        return query
-
-    @staticmethod
-    def columnsParser(columns):
-        if isinstance(columns, type(None)):
-            columns = '*'
-        elif isinstance(columns, list):
-            columns = ', '.join(columns)
-        return columns
-
 
 if __name__ == "__main__":
     db = Database()
 
     columns = {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "name": "TEXT", "price": "INT"}
+
     db.delete_table("cars")
     db.create_table("cars", columns)
 
     db.insert("cars", (("Audi", 3000), ("VW", 1000)), columnNames=["name", "price"])
-    db.insert("cars", ((5, "Hummer", 3000),))
+    db.insert("cars", ((5, "Hummer2", 3000), (6, "Audi", 4000)))
 
-    db.remove("cars", query="name = 'Hummer'")
-    rows = db.fetch("cars", columns=['name', 'rowid'], query="price < 200000")
+    db.remove("cars", query={"name": "'Audi'", "price": 40000})
+
+    rows = db.find_all("cars", query={"name": "'Audi'"})
+    print(rows)
+    # {"name": "'Hummer2'", "price": ["eq", 3000]]}
+    rows = db.find_one("cars", query={"name": "'Hummer2'", "price": 3000})
     print(rows)
