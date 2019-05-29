@@ -1,6 +1,11 @@
 import sqlite3 as lite
 import sys
+import os
 import logging
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../'))
+
+import src.models.database.constants as DBCONSTANTS
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -20,14 +25,14 @@ def queryop(key, op):
 
 
 class Database(object):
-    def __init__(self, dbpath):
-        self.database = dbpath
-        self.columnNames = None
 
-    def _checkIfTableExists(self, tablename):
+    PATH2DB = DBCONSTANTS.DATABASEPATH
+
+    @staticmethod
+    def _checkIfTableExists(tablename):
         """
         """
-        con = lite.connect(self.database)
+        con = lite.connect(Database.PATH2DB)
         with con:
             cur = con.cursor()
             cur.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{}'".format(tablename))
@@ -35,10 +40,11 @@ class Database(object):
                 return True
         return False
 
-    def delete_table(self, tablename):
+    @staticmethod
+    def delete_table(tablename):
         """
         """
-        con = lite.connect(self.database)
+        con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 # From the connection, we get the cursor object. The cursor is used
@@ -53,7 +59,8 @@ class Database(object):
         except Exception as e:
             logger.warning("{}".format(e))
 
-    def create_table(self, tablename, columnsdict, purge=False):
+    @staticmethod
+    def create_table(tablename, columnsdict):
         """
         Create table
         columnsdict must be of the form
@@ -61,9 +68,8 @@ class Database(object):
         """
         columns = ["{} {}".format(key, columnsdict[key]) for key in columnsdict.keys()]
 
-        if not self._checkIfTableExists(tablename):
-            self.columnNames = list(columnsdict.keys())
-            con = lite.connect(self.database)
+        if not Database._checkIfTableExists(tablename):
+            con = lite.connect(Database.PATH2DB)
             try:
                 with con:
                     # From the connection, we get the cursor object. The cursor is used
@@ -78,9 +84,9 @@ class Database(object):
             except Exception as e:
                 logger.warning("{}".format(e))
         else:
-            self.columnNames = self.getColumnNames(tablename)
             logger.info("Table {} already exists. Reusing...".format(tablename))
 
+    @staticmethod
     def insertMany(self, tablename, rows, columnNames=None):
         """
         Insert multiple entries
@@ -88,7 +94,7 @@ class Database(object):
         db.insertMany("cars", ((5, "Hummer2", 3000), (6, "Audi", 4000)))
         """
         placeholder = ', '.join(len(rows[0]) * ['?'])
-        con = lite.connect(self.database)
+        con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 cur = con.cursor()
@@ -102,11 +108,12 @@ class Database(object):
         except Exception as e:
             logger.warning("{}".format(e))
 
-    def insert(self, tablename, rows):
+    @staticmethod
+    def insert(tablename, rows):
         """
         Insert a list of dictionaries
         """
-        con = lite.connect(self.database)
+        con = lite.connect(Database.PATH2DB)
         for row in rows:
             placeholders = ', '.join(['?' for key, val in row.items()])
             vals = [val for key, val in row.items()]
@@ -122,11 +129,12 @@ class Database(object):
             except Exception as e:
                 logger.warning("{}".format(e))
 
-    def getColumnNames(self, tablename):
+    @staticmethod
+    def getColumnNames(tablename):
         """
         Get ColumnsNames of DB
         """
-        con = lite.connect(self.database)
+        con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 con.row_factory = lite.Row
@@ -139,13 +147,14 @@ class Database(object):
         except Exception as e:
             logger.warning("{}".format(e))
 
-    def find_one(self, tablename, query):
+    @staticmethod
+    def find_one(tablename, query):
         """
         """
 
         query = ' AND '.join(list(map(queryop, query.keys(), query.values())))
 
-        con = lite.connect(self.database)
+        con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 con.row_factory = lite.Row
@@ -158,7 +167,8 @@ class Database(object):
         except Exception as e:
             logger.warning("{}".format(e))
 
-    def find(self, tablename, query):
+    @staticmethod
+    def find(tablename, query):
         """Summary
 
         Args:
@@ -170,7 +180,7 @@ class Database(object):
         """
         query = ' AND '.join(list(map(queryop, query.keys(), query.values())))
 
-        con = lite.connect(self.database)
+        con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 con.row_factory = lite.Row
@@ -183,7 +193,8 @@ class Database(object):
         except Exception as e:
             logger.warning("{}".format(e))
 
-    def remove(self, tablename, query):
+    @staticmethod
+    def remove(tablename, query):
         """
         Args:
             tablename (TYPE): Description
@@ -191,7 +202,7 @@ class Database(object):
         """
         query = ' AND '.join(list(map(queryop, query.keys(), query.values())))
 
-        con = lite.connect(self.database)
+        con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 cur = con.cursor()
@@ -202,7 +213,8 @@ class Database(object):
         except Exception as e:
             logger.warning("{}".format(e))
 
-    def getMetaData(self, tablename):
+    @staticmethod
+    def getMetaData(tablename):
         """
         Args:
             tablename (TYPE): Description
@@ -211,7 +223,7 @@ class Database(object):
             TYPE: Description
         """
 
-        con = lite.connect(self.database)
+        con = lite.connect(Database.PATH2DB)
         try:
             with con:
 
@@ -227,20 +239,18 @@ class Database(object):
 
 if __name__ == "__main__":
 
-    db = Database('test2.db')
-
     columns = {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "name": "TEXT", "price": "INT"}
 
     # db.delete_table("cars")
-    db.create_table("cars", columns)
+    Database.create_table("cars", columns)
 
-    db.insert("cars", [{"name": "Seat123", "price": 300},
-                       {"name": "VW", "price": 600},
-                       {"name": "Skoda", "price": 10000},
-                       {"name": "Porsche", "price": 600}])
+    Database.insert("cars", [{"name": "Seat123", "price": 300},
+                             {"name": "VW", "price": 600},
+                             {"name": "Skoda", "price": 10000},
+                             {"name": "Porsche", "price": 600}])
 
-    db.remove("cars", query={"name": ["=", "Audi"], "price": ["<=", 3000]})
+    Database.remove("cars", query={"name": ["=", "Audi"], "price": ["<=", 3000]})
 
-    rows = db.find("cars", query={"name": ["=", "VW"]})
+    rows = Database.find("cars", query={"name": ["=", "VW"]})
 
     print(rows)
