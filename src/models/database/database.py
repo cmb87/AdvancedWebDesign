@@ -159,9 +159,15 @@ class Database(object):
             logger.warning("{}".format(e))
 
     def find(self, tablename, query):
-        """
-        """
+        """Summary
 
+        Args:
+            tablename (TYPE): Description
+            query (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
         query = ' AND '.join(list(map(queryop, query.keys(), query.values())))
 
         con = lite.connect(self.database)
@@ -179,6 +185,9 @@ class Database(object):
 
     def remove(self, tablename, query):
         """
+        Args:
+            tablename (TYPE): Description
+            query (TYPE): Description
         """
         query = ' AND '.join(list(map(queryop, query.keys(), query.values())))
 
@@ -195,7 +204,13 @@ class Database(object):
 
     def getMetaData(self, tablename):
         """
+        Args:
+            tablename (TYPE): Description
+
+        Returns:
+            TYPE: Description
         """
+
         con = lite.connect(self.database)
         try:
             with con:
