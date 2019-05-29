@@ -8,13 +8,25 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../'))
 
 from src.models.geometry.cube import Cube
+from src.models.database.database import Database
 
 app = Flask(__name__)
 app.secret_key = "123"
 
-#@app.before_first_request
-# def init_db():
-#    Database.initialize()
+
+@app.before_first_request
+def init_db():
+    """Create database and tables
+    """
+    db = Database(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../app.db'))
+
+    tables = {'users': {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "name": "TEXT", "price": "INT"},
+              'progress': {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "task_id": "INT", "progress": "FLOAT"},
+              'tasks': {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "user_id": "INT", "name": "TEXT"},
+              }
+    for table, columns in tables.items():
+        db.delete_table(table)
+        db.create_table(table, columns)
 
 
 @app.route('/')
