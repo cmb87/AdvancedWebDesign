@@ -8,8 +8,8 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../'))
 
 from src.models.geometry.cube import Cube
-from src.models.database.database import Database
-
+from src.common.database import Database
+import src.models.users.constants as UserConstants
 
 app = Flask(__name__)
 app.secret_key = "123"
@@ -20,7 +20,7 @@ def init_db():
     """Create database and tables
     """
 
-    tables = {'users': {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "name": "TEXT", "price": "INT"},
+    tables = {UserConstants.COLLECTION: {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "email": "TEXT", "password": "TEXT"},
               'progress': {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "task_id": "INT", "progress": "FLOAT"},
               'tasks': {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "user_id": "INT", "name": "TEXT"},
               }
@@ -113,6 +113,11 @@ def webgllines():
     vertices, nvertices, color = cube.readSTL()
 
     return render_template('webgl/plane.html', geometry=vertices, npoints=nvertices, color=color)
+
+
+@app.route('/starfield')
+def starfield():
+    return render_template('starfield/starfield.html')
 
 
 if __name__ == '__main__':

@@ -3,9 +3,9 @@ import sys
 import os
 import logging
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../'))
 
-import src.models.database.constants as DBCONSTANTS
+import src.common.constants as DBCONSTANTS
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -30,14 +30,20 @@ class Database(object):
 
     @staticmethod
     def _checkIfTableExists(tablename):
-        """
-        """
+
         con = lite.connect(Database.PATH2DB)
-        with con:
-            cur = con.cursor()
-            cur.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{}'".format(tablename))
-            if cur.fetchone()[0] == 1:
-                return True
+
+        try:
+            with con:
+                cur = con.cursor()
+                cur.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{}'".format(tablename))
+                if cur.fetchone()[0] == 1:
+                    return True
+        except lite.Error as e:
+            logger.warning("{}".format(e))
+        except Exception as e:
+            logger.warning("{}".format(e))
+
         return False
 
     @staticmethod
