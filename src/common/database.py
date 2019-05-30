@@ -17,13 +17,6 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-def queryop(key, op):
-    val, operator = op[1], op[0]
-    if isinstance(val, str):
-        val = "'{}'".format(val)
-    return "({} {} {})".format(key, operator, val)
-
-
 class Database(object):
 
     PATH2DB = DBCONSTANTS.DATABASEPATH
@@ -136,6 +129,29 @@ class Database(object):
                 logger.warning("{}".format(e))
 
     @staticmethod
+    def update(tablename, row, query):
+        """
+        Insert a list of dictionaries
+        """
+        qkeys, qvals = Database._queryProcessor(query)
+
+        vals, keys = [], []
+        for key, val in row.items():
+            keys.append("{} = ?".format(key))
+            vals.append(val)
+
+        con = lite.connect(Database.PATH2DB)
+        try:
+            with con:
+                cur = con.cursor()
+                cur.execute("UPDATE {} SET {} WHERE {}".format(tablename, ', '.join(keys), ' AND '.join(qkeys)), vals + qvals)
+
+        except lite.Error as e:
+            logger.warning("{}".format(e))
+        except Exception as e:
+            logger.warning("{}".format(e))
+
+    @staticmethod
     def getColumnNames(tablename):
         """
         Get ColumnsNames of DB
@@ -154,18 +170,25 @@ class Database(object):
             logger.warning("{}".format(e))
 
     @staticmethod
+    def _queryProcessor(query):
+        vals, keys = [], []
+        for key, val in query.items():
+            keys.append("({} {} ?)".format(key, val[0]))
+            vals.append(val[1])
+        return keys, vals
+
+    @staticmethod
     def find_one(tablename, query):
         """
         """
-
-        query = ' AND '.join(list(map(queryop, query.keys(), query.values())))
+        keys, vals = Database._queryProcessor(query)
 
         con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 con.row_factory = lite.Row
                 cur = con.cursor()
-                cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, query))
+                cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, ' AND '.join(keys)), vals)
                 return dict(cur.fetchone())
 
         except lite.Error as e:
@@ -184,14 +207,14 @@ class Database(object):
         Returns:
             TYPE: Description
         """
-        query = ' AND '.join(list(map(queryop, query.keys(), query.values())))
+        keys, vals = Database._queryProcessor(query)
 
         con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 con.row_factory = lite.Row
                 cur = con.cursor()
-                cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, query))
+                cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, ' AND '.join(keys)), vals)
                 return list(map(dict, cur.fetchall()))
 
         except lite.Error as e:

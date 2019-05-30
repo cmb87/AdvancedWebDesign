@@ -81,3 +81,20 @@ if __name__ == "__main__":
 
     user = User("test@text.com", "123")
     user.save_to_db()
+
+    user = User("test@text.com", "123")
+    user.save_to_db()
+
+    user = User("test@text.com", "123")
+    user.save_to_db()
+
+    user = User("test@text.com", "123")
+    user.save_to_db()
+
+    Database.update(UserConstants.COLLECTION, {"password": "yolo", "email": "lol@gmail.com"}, query={"email": ["=", "test@text.com"], "_id": ["=", 2]})
+
+    rows = Database.find_one(UserConstants.COLLECTION, query={"email": ["=", "test@text.com"]})
+    print(rows)
+
+    rows = Database.find_one(UserConstants.COLLECTION, query={"email": ["=", "lol@gmail.com"]})
+    print(rows)
