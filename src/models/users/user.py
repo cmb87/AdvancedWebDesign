@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../'))
 
 from src.common.database import Database
@@ -27,7 +28,7 @@ class User(object):
         :return: True if valid, False otherwise
         """
 
-        user_data = Database.find_one(UserConstants.COLLECTION, {"email": email})
+        user_data = Database.find(UserConstants.COLLECTION, {"email": email}, one=True)
 
         if user_data is None:
             # Tell user email doesn't exist
@@ -46,7 +47,7 @@ class User(object):
         :return: True (User registered) False (User does already exist)
         """
 
-        user_data = Database.find_one(UserConstants.COLLECTION, {"email": email})
+        user_data = Database.find(UserConstants.COLLECTION, {"email": email}, one=True)
 
         if user_data is not None:
             raise UserErrors.UserAlreadyRegisteredError("User already exists!")
@@ -63,7 +64,7 @@ class User(object):
 
     @classmethod
     def find_by_email(cls, email):
-        user = Database.find_one(UserConstants.COLLECTION, {"email": email})
+        user = Database.find(UserConstants.COLLECTION, {"email": email}, one=True)
         if user is not None:
             return cls(**user)
 
@@ -93,8 +94,8 @@ if __name__ == "__main__":
 
     Database.update(UserConstants.COLLECTION, {"password": "yolo", "email": "lol@gmail.com"}, query={"email": ["=", "test@text.com"], "_id": ["=", 2]})
 
-    rows = Database.find_one(UserConstants.COLLECTION, query={"email": ["=", "test@text.com"]})
+    rows = Database.find(UserConstants.COLLECTION, query={"email": ["=", "test@text.com"]}, one=True)
     print(rows)
 
-    rows = Database.find_one(UserConstants.COLLECTION, query={"email": ["=", "lol@gmail.com"]})
+    rows = Database.find(UserConstants.COLLECTION, query={"email": ["=", "lol@gmail.com"]}, one=True)
     print(rows)

@@ -23,7 +23,14 @@ class Database(object):
 
     @staticmethod
     def _checkIfTableExists(tablename):
+        """Check whether a table exists or not
 
+        Args:
+            tablename (TYPE): Table name
+
+        Returns:
+            TYPE: Description
+        """
         con = lite.connect(Database.PATH2DB)
 
         try:
@@ -52,11 +59,12 @@ class Database(object):
                 cur = con.cursor()
                 cur.execute("DROP TABLE IF EXISTS {}".format(tablename))
                 logger.info("Deleting table {}.".format(tablename))
-
+                return True
         except lite.Error as e:
             logger.warning("{}".format(e))
         except Exception as e:
             logger.warning("{}".format(e))
+        return False
 
     @staticmethod
     def create_table(tablename, columnsdict):
@@ -77,13 +85,14 @@ class Database(object):
                     cur = con.cursor()
                     cur.execute("CREATE TABLE {}({})".format(tablename, ', '.join(columns)))
                     logger.info("New table {} created sucessfully.".format(tablename))
-
+                    return True
             except lite.Error as e:
                 logger.warning("{}".format(e))
             except Exception as e:
                 logger.warning("{}".format(e))
         else:
             logger.info("Table {} already exists. Reusing...".format(tablename))
+        return False
 
     @staticmethod
     def insertMany(self, tablename, rows, columnNames=None):
@@ -101,11 +110,12 @@ class Database(object):
                     cur.executemany("INSERT INTO {} VALUES({})".format(tablename, placeholder), rows)
                 elif isinstance(columnNames, list):
                     cur.executemany("INSERT INTO {}({}) VALUES({})".format(tablename, ", ".join(columnNames), placeholder), rows)
-
+                return True
         except lite.Error as e:
             logger.warning("{}".format(e))
         except Exception as e:
             logger.warning("{}".format(e))
+        return False
 
     @staticmethod
     def insert(tablename, rows):
@@ -122,11 +132,12 @@ class Database(object):
                 with con:
                     cur = con.cursor()
                     cur.execute("INSERT INTO {}({}) VALUES({})".format(tablename, ', '.join(keys), placeholders), vals)
-
+                    return True
             except lite.Error as e:
                 logger.warning("{}".format(e))
             except Exception as e:
                 logger.warning("{}".format(e))
+            return False
 
     @staticmethod
     def update(tablename, row, query):
@@ -145,11 +156,14 @@ class Database(object):
             with con:
                 cur = con.cursor()
                 cur.execute("UPDATE {} SET {} WHERE {}".format(tablename, ', '.join(keys), ' AND '.join(qkeys)), vals + qvals)
-
+                return True
         except lite.Error as e:
             logger.warning("{}".format(e))
+
         except Exception as e:
             logger.warning("{}".format(e))
+
+        return False
 
     @staticmethod
     def getColumnNames(tablename):
@@ -178,26 +192,7 @@ class Database(object):
         return keys, vals
 
     @staticmethod
-    def find_one(tablename, query):
-        """
-        """
-        keys, vals = Database._queryProcessor(query)
-
-        con = lite.connect(Database.PATH2DB)
-        try:
-            with con:
-                con.row_factory = lite.Row
-                cur = con.cursor()
-                cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, ' AND '.join(keys)), vals)
-                return dict(cur.fetchone())
-
-        except lite.Error as e:
-            logger.warning("{}".format(e))
-        except Exception as e:
-            logger.warning("{}".format(e))
-
-    @staticmethod
-    def find(tablename, query):
+    def find(tablename, query, one=False):
         """Summary
 
         Args:
@@ -215,12 +210,16 @@ class Database(object):
                 con.row_factory = lite.Row
                 cur = con.cursor()
                 cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, ' AND '.join(keys)), vals)
-                return list(map(dict, cur.fetchall()))
+                if one:
+                    return dict(cur.fetchone())
+                else:
+                    return list(map(dict, cur.fetchall()))
 
         except lite.Error as e:
             logger.warning("{}".format(e))
         except Exception as e:
             logger.warning("{}".format(e))
+        return False
 
     @staticmethod
     def remove(tablename, query):
@@ -229,18 +228,19 @@ class Database(object):
             tablename (TYPE): Description
             query (TYPE): Description
         """
-        query = ' AND '.join(list(map(queryop, query.keys(), query.values())))
+        keys, vals = Database._queryProcessor(query)
 
         con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 cur = con.cursor()
-                cur.execute("DELETE FROM {} WHERE {}".format(tablename, query))
-
+                cur.execute("DELETE FROM {} WHERE {}".format(tablename, ' AND '.join(keys)), vals)
+                return True
         except lite.Error as e:
             logger.warning("{}".format(e))
         except Exception as e:
             logger.warning("{}".format(e))
+        return False
 
     @staticmethod
     def getMetaData(tablename):
@@ -266,20 +266,20 @@ class Database(object):
             logger.warning("{}".format(e))
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    columns = {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "name": "TEXT", "price": "INT"}
+#     columns = {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "name": "TEXT", "price": "INT"}
 
-    # db.delete_table("cars")
-    Database.create_table("cars", columns)
+#     # db.delete_table("cars")
+#     Database.create_table("cars", columns)
 
-    Database.insert("cars", [{"name": "Seat123", "price": 300},
-                             {"name": "VW", "price": 600},
-                             {"name": "Skoda", "price": 10000},
-                             {"name": "Porsche", "price": 600}])
+#     Database.insert("cars", [{"name": "Seat123", "price": 300},
+#                              {"name": "VW", "price": 600},
+#                              {"name": "Skoda", "price": 10000},
+#                              {"name": "Porsche", "price": 600}])
 
-    Database.remove("cars", query={"name": ["=", "Audi"], "price": ["<=", 3000]})
+#     Database.remove("cars", query={"name": ["=", "Audi"], "price": ["<=", 3000]})
 
-    rows = Database.find("cars", query={"name": ["=", "VW"]})
+#     rows = Database.find("cars", query={"name": ["=", "VW"]})
 
-    print(rows)
+#     print(rows)

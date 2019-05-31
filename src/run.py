@@ -31,7 +31,7 @@ def init_db():
 
 @app.route('/')
 def home():
-    return render_template('starfield/starfield.html')
+    return render_template('home.html')
 
 
 # https://www.tutorialspoint.com/d3js/d3js_concepts.htm
