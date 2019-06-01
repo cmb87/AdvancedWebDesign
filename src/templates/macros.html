@@ -1,0 +1,46 @@
+{% macro render_modal(id, image, item_name, description, screenshot) -%}
+<div class="modal fade" id="{{ id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="itemLabel">Modal title</h5>
+                {{ image }}
+                {{ item_name }}
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                {{ screenshot }}
+            </div>
+            <div class="modal-footer">
+                {{ description }}
+            </div>
+        </div>
+    </div>
+</div> 
+{%- endmacro %}
+
+
+
+{% macro render_modal_test(id, item_name, description) -%}
+<div class="modal fade" id="{{ id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="itemLabel">Modal title</h5>
+                {{ item_name }}
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                {{ description }}
+            </div>
+            <div class="modal-footer">
+                {{ description }}
+            </div>
+        </div>
+    </div>
+</div> 
+{%- endmacro %}

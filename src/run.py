@@ -33,7 +33,7 @@ def init_db():
 def home():
     return render_template('home.html')
 
-
+# D3 stuff
 # https://www.tutorialspoint.com/d3js/d3js_concepts.htm
 @app.route('/d3basic')
 def d3basic():
@@ -69,12 +69,6 @@ def sendDataContour():
     else:
         return "Aint workin"
 
-
-@app.route('/d3line')
-def d3line():
-    return render_template('d3/line.html')
-
-
 @app.route('/getData', methods=['GET', 'POST'])
 def sendData():
     if request.method == 'POST':
@@ -93,6 +87,10 @@ def sendData():
         return "Aint workin"
 
 
+@app.route('/d3line')
+def d3line():
+    return render_template('d3/line.html')
+
 # https://www.tutorialspoint.com/webgl/webgl_cube_rotation.htm
 # https://www.tutorialspoint.com/webgl/webgl_drawing_a_model.htm
 
@@ -107,17 +105,23 @@ def webgltriangle():
     return render_template('webgl/triangle.html')
 
 
-@app.route('/webgllines')
-def webgllines():
+@app.route('/webglstl')
+def webglstl():
     cube = Cube()
     vertices, nvertices, color = cube.readSTL()
 
-    return render_template('webgl/plane.html', geometry=vertices, npoints=nvertices, color=color)
+    return render_template('webgl/stlNew.html', geometry=vertices, npoints=nvertices, color=color)
 
 
 @app.route('/starfield')
 def starfield():
     return render_template('starfield/starfield.html')
+
+
+@app.route("/flowchart")
+def flowchart():
+    return render_template('flowchart/flowchartNew.html', processes=["opt_mises.py","opt_forcedResponse.py"])
+
 
 
 if __name__ == '__main__':

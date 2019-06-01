@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% include 'html_dependencies.html' %}
+
+<link href="{{ url_for('static', filename='css/jquery.flowchart.css') }}" rel="stylesheet" type="text/css">
+<script src="{{ url_for('static', filename='js/jquery.flowchart.js') }}"></script>
+
+
+<div class="democontainer">
+    <h1>Flowchart</h1>
+    <div class="demo" id="example"></div>
+    <button class="btn btn-primary" id="create_operator">Create</button>
+    <button class="btn btn-secondary" id="showprops_button">Export</button>
+    <button class="btn btn-danger" id="delete_selected_button">Delete</button>
+    <button class="btn btn-danger" id="load_graph_button">Load</button>
+
+
+    <form id="procform">
+      <div class="form-group">
+          <p id="procform-head"></p>
+      </div>
+      <div class="form-group">
+        <label for="exampleFormControlSelect1">Parallel Instances</label>
+        <select class="form-control" id="exampleFormControlSelect1">
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="exampleFormControlSelect2">Processes</label>
+        <select multiple class="form-control" id="exampleFormControlSelect2">
+            {% for proc in processes %}
+              <option>{{ proc }}</option>
+            {% endfor %}
+        </select>
+      </div>
+    </form>
+
+    <p id=result></p>
+
+</div>
+
+
+<style>
+    /*body { background-color:#fafafa;}*/
+    .democontainer { margin:150px auto;}
+    .demo {
+      height: 300px;
+      margin-bottom: 10px;
+    }
+</style>
+
+
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    var data = {};
+
+    // Apply the plugin on a standard, empty div...
+    // Also define callbacks when selected
+    $('#example').flowchart({ data: data,
+      onOperatorSelect: function(operatorId) {
+        var procname = $('#example').flowchart('getOperatorTitle',operatorId);
+
+        $( "#procform" ).dialog({
+              modal: true,
+              show: {
+                effect: "blind",
+                duration: 1000
+              },
+              hide: {
+                effect: "explode",
+                duration: 1000
+              }
+
+            //buttons: {
+            //    Ok: function() {
+            //    $( this ).dialog( "close" );
+            //    }
+            //}
+        });
+
+
+        $("#procform-head").text(procname);
+        //$("#procform").fadeIn("slow");
+
+
+        // setOperatorData(operatorId, operatorData)
+
+        return true;
+        },
+
+      onOperatorUnselect: function() {
+        //$("#procform").fadeOut("slow");
+        return true;
+      }
+
+    });
+
+    // Hide process form at the beginning!
+    $("#procform").hide();
+  });
+
+
+  var operatorI = 0;
+    $('#create_operator').click(function() {
+      var operatorId = 'Process ' + operatorI;
+      var operatorData = {
+        top: 60,
+        left: 500,
+        properties: {
+          title: 'Process ' + (operatorI + 3),
+          inputs: {
+            input_1: {
+              label: 'Input 1',
+            }
+          },
+          outputs: {
+            output_1: {
+              label: 'Output 1',
+            }
+          }
+        }
+      };
+
+      operatorI++;
+
+      $('#example').flowchart('createOperator', operatorId, operatorData);
+    });
+
+    // -------------------------------------------
+    $('#delete_selected_button').click(function() {
+      $('#example').flowchart('deleteSelected');
+    });
+
+    // -------------------------------------------
+    // Load data
+    $('#load_graph_button').click(function() {
+
+       $.ajax({
+            type: "POST", //rest Type
+            dataType: 'json',
+            url: "/sendJson",
+            success: function (dataServer) {
+                $("#result").text('Data loaded');
+                $('#example').flowchart('setData', dataServer.output);
+            },
+            error: function(error) {
+                window.alert(error);
+            }
+
+        });
+
+    });
+
+    // -------------------------------------------
+    // Send data back to Flask
+    var $flowchart = $('#example');
+    $('#showprops_button').click(function() {
+      var data = $flowchart.flowchart('getData');
+      //.val(JSON.stringify(data, null, 2));
+        $.ajax({
+            url: '/operatorData',
+            data: JSON.stringify(data),
+            contentType: 'application/json;charset=UTF-8',
+            type: 'POST',
+            success: function(response) {
+                window.alert(response);
+            },
+            error: function(error) {
+                window.alert(error);
+            }
+        });
+
+      // var opdata = getOperatorData(opid);
+      // window.alert(opid);
+    });
+
+    $("#procform").submit(function( event ) {
+      console.log( $( this ).serializeArray() );
+      event.preventDefault();
+      window.alert("Formdata sent");
+    });
+
+</script>
+
+{% endblock %}

@@ -47,7 +47,7 @@ class Cube(object):
         cube.save('cube.stl')
 
     def readSTL(self):
-        mystl = mesh.Mesh.from_file('/home/cp/projects/01_sqliteJS/src/models/geometry/Airbus_A319.stl')
+        mystl = mesh.Mesh.from_file('/home/cp/projects/02_WebApps/05_AdvancedWebDesign/src/models/geometry/Airbus_A319.stl')
         #mystl = mesh.Mesh.from_file('/home/cp/projects/01_sqliteJS/src/models/geometry/cube.stl')
 
         xmax = max([mystl.x.max(), mystl.y.max(), mystl.z.max()])
