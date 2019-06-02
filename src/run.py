@@ -7,7 +7,6 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../'))
 
-from src.models.geometry.cube import Cube
 from src.common.database import Database
 import src.models.users.constants as UserConstants
 
@@ -19,7 +18,6 @@ app.secret_key = "123"
 def init_db():
     """Create database and tables
     """
-
     tables = {UserConstants.COLLECTION: {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "email": "TEXT", "password": "TEXT"},
               'progress': {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "task_id": "INT", "progress": "FLOAT"},
               'tasks': {"id": "INTEGER PRIMARY KEY AUTOINCREMENT", "user_id": "INT", "name": "TEXT"},
@@ -33,94 +31,16 @@ def init_db():
 def home():
     return render_template('home.html')
 
-# D3 stuff
-# https://www.tutorialspoint.com/d3js/d3js_concepts.htm
-@app.route('/d3basic')
-def d3basic():
-    return render_template('d3/basic.html')
 
+from src.models.users.views import user_blueprint
+from src.models.d3.views import d3_blueprint
+from src.models.geometry.views import webgl_blueprint
+from src.models.flowchart.views import fc_blueprint
 
-@app.route('/d3contour')
-def d3contourplot():
-    return render_template('d3/contourplot.html')
-
-
-@app.route('/getDataContour', methods=['GET', 'POST'])
-def sendDataContour():
-    if request.method == 'POST':
-
-        def f(x, y):
-            return np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)
-
-        x = np.linspace(0, 5, 50)
-        y = np.linspace(0, 5, 40)
-
-        X, Y = np.meshgrid(x, y)
-        X, Y = X.flatten(), Y.flatten()
-        Z = f(X, Y)
-
-        levels = np.linspace(Z.min(), Z.max(), 11).tolist()
-        data = []
-        for x, y, z in zip(X.tolist(), Y.tolist(), Z.tolist()):
-            data.append({"x": x, "y": y, "z": z})
-
-        return jsonify(values=data, width=800, height=200, levels=levels)
-
-    else:
-        return "Aint workin"
-
-@app.route('/getData', methods=['GET', 'POST'])
-def sendData():
-    if request.method == 'POST':
-
-        X = np.linspace(0, 5, 40)
-        Y = np.sin(X)
-        Z = np.sin(X)
-
-        data = []
-        for x, y, z in zip(X.tolist(), Y.tolist(), Z.tolist()):
-            data.append({"x": x, "y": y, "z": z})
-
-        return jsonify(values=data, width=800, height=200)
-
-    else:
-        return "Aint workin"
-
-
-@app.route('/d3line')
-def d3line():
-    return render_template('d3/line.html')
-
-# https://www.tutorialspoint.com/webgl/webgl_cube_rotation.htm
-# https://www.tutorialspoint.com/webgl/webgl_drawing_a_model.htm
-
-
-@app.route('/webglcube')
-def webglcube():
-    return render_template('webgl/cube.html')
-
-
-@app.route('/webgltriangle')
-def webgltriangle():
-    return render_template('webgl/triangle.html')
-
-
-@app.route('/webglstl')
-def webglstl():
-    cube = Cube()
-    vertices, nvertices, color = cube.readSTL()
-
-    return render_template('webgl/stlNew.html', geometry=vertices, npoints=nvertices, color=color)
-
-
-@app.route('/starfield')
-def starfield():
-    return render_template('starfield/starfield.html')
-
-
-@app.route("/flowchart")
-def flowchart():
-    return render_template('flowchart/flowchartNew.html', processes=["opt_mises.py","opt_forcedResponse.py"])
+app.register_blueprint(user_blueprint, url_prefix="/users")
+app.register_blueprint(d3_blueprint, url_prefix="/d3")
+app.register_blueprint(webgl_blueprint, url_prefix="/webgl")
+app.register_blueprint(fc_blueprint, url_prefix="/flowchart")
 
 
 

@@ -1,0 +1,61 @@
+{
+    "links": {
+        "0": {
+            "fromConnector": "output_1",
+            "fromOperator": "Process 0",
+            "fromSubConnector": 0,
+            "toConnector": "input_1",
+            "toOperator": "Process 1",
+            "toSubConnector": 0
+        }
+    },
+    "operatorTypes": {},
+    "operators": {
+        "Process 0": {
+            "left": 40,
+            "properties": {
+                "inputs": {
+                    "input_0": {
+                        "label": "Input 0"
+                    },
+                    "input_1": {
+                        "label": "Input 1"
+                    }
+                },
+                "outputs": {
+                    "output_0": {
+                        "label": "Output 0"
+                    },
+                    "output_1": {
+                        "label": "Output 1"
+                    },
+                    "output_2": {
+                        "label": "Output 2"
+                    }
+                },
+                "title": "Process 3"
+            },
+            "script": [
+                "opt_mises.py"
+            ],
+            "top": 40
+        },
+        "Process 1": {
+            "left": 500,
+            "properties": {
+                "inputs": {
+                    "input_1": {
+                        "label": "Input 1"
+                    }
+                },
+                "outputs": {
+                    "output_1": {
+                        "label": "Output 1"
+                    }
+                },
+                "title": "Process 4"
+            },
+            "top": 60
+        }
+    }
+}

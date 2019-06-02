@@ -206,7 +206,7 @@
      $.ajax({
           type: "POST", //rest Type
           dataType: 'json',
-          url: "/sendJson",
+          url: "/flowchart/sendJson",
           success: function (dataServer) {
               $("#result").text('Data loaded');
               $('#example').flowchart('setData', dataServer.output);
@@ -226,7 +226,7 @@
     var data = $flowchart.flowchart('getData');
     //.val(JSON.stringify(data, null, 2));
       $.ajax({
-          url: '/operatorData',
+          url: '/flowchart/operatorData',
           data: JSON.stringify(data),
           contentType: 'application/json;charset=UTF-8',
           type: 'POST',

@@ -17,7 +17,7 @@ $(document).ready(function(){
   $("button").click(function(){
     $.ajax({
             type: "POST",
-            url: '/getDataContour',
+            url: '/d3/getDataContour',
             success: function (data) {
                var pos_data = data;
                div_name = "#my_dataviz";
