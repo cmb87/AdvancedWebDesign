@@ -1,15 +1,17 @@
 from flask import Blueprint, request, session, redirect, url_for, render_template, jsonify
 import json
+from src.models.users.decorators import requires_login
 
 fc_blueprint = Blueprint('flowchart', __name__)
 
-
 @fc_blueprint.route('/')
+@requires_login
 def flowchart():
     return render_template('flowchart/flowchartNew.html', processes=["opt_mises.py","opt_forcedResponse.py"])
 
 
 @fc_blueprint.route('/operatorData', methods=['POST'])
+@requires_login
 def operatorData():
     result = []
     data = request.get_json()
@@ -22,6 +24,7 @@ def operatorData():
     return 'Export Successfull!'
 
 @fc_blueprint.route('/sendJson', methods=['POST'])
+@requires_login
 def sendJson():
 
     ang = request.args.get('fucker', 0, type=str)

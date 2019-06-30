@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Advanced Webdesign</title>
+    <title>Advanced WebDesign</title>
 
     {% include 'html_dependencies.html' %}
 
@@ -14,7 +14,7 @@
 <div class="modal fade" id="basemodalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content">
+    <div class="modal-content bg-light">
       <div class="modal-header">
         <h4 class="modal-title w-100 font-weight-bold">Login</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -25,20 +25,30 @@
       <div class="modal-body mx-3">
 
         <!-- Form -->
-        <form id="userLoginForm" action="{{ url_for('users.login_user')}}" method="post">
+        <form action="{{ url_for('users.login_user')}}" method="post" id="userLoginForm">
 
           <div class="md-form mb-5">
             <i class="fas fa-envelope prefix grey-text"></i>
-            <input type="email" id="userForm-email" class="form-control validate">
-            <label data-error="wrong" data-success="right" for="defaultForm-email">Your email</label>
+            <label data-error="wrong" data-success="right" for="userForm-email">Your email</label>
+            <input type="email" name="userForm-email" id="userForm-email" class="form-control validate" placeholder="Enter email">
           </div>
 
           <div class="md-form mb-4">
             <i class="fas fa-lock prefix grey-text"></i>
-            <input type="password" id="userForm-pass" class="form-control validate">
-            <label data-error="wrong" data-success="right" for="defaultForm-pass">Your password</label>
+
+            <label data-error="wrong" data-success="right" for="userForm-pass">Your password</label>
+            <input type="password" name="userForm-pass" id="userForm-pass" class="form-control validate" placeholder="Password">
+            
+            {% with messages = get_flashed_messages(category_filter=["login"]) %}
+               {% if messages %}
+                  {% for message in messages %}
+                     <small id="usererrorflash" class="form-text text-danger"> {{ message }} </small>
+                  {% endfor %}
+               {% endif %}
+            {% endwith %}
+
           </div>
-          <button type="submit" class="btn btn-default" id="loginsubmitbutton">Login</button> 
+          <button type="submit" class="btn btn-secondary" id="loginsubmitbutton">Login</button> 
 
         </form>
 
@@ -51,6 +61,113 @@
     </div>
   </div>
 </div>
+
+
+<!-- Register form -->
+<div class="modal fade" id="basemodalRegisterForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content bg-light">
+      <div class="modal-header">
+        <h4 class="modal-title w-100 font-weight-bold">Register</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <!-- Body starts -->
+      <div class="modal-body mx-3">
+
+        <!-- Form -->
+        <form action="{{ url_for('users.register_user')}}" method="post" id="userRegisterForm">
+
+          <div class="md-form mb-5">
+            <i class="fas fa-envelope prefix grey-text"></i>
+            <label data-error="wrong" data-success="right" for="userRegisterForm-name">Your Name</label>
+            <input type="text" name="userRegisterForm-name" id="userRegisterForm-name" class="form-control validate" placeholder="Enter name">
+          </div>
+
+          <div class="md-form mb-5">
+            <i class="fas fa-envelope prefix grey-text"></i>
+            <label data-error="wrong" data-success="right" for="userRegisterForm-email">Your email</label>
+            <input type="email" name="userRegisterForm-email" id="userRegisterForm-email" class="form-control validate" placeholder="Enter email">
+          </div>
+
+          <div class="md-form mb-4">
+            <i class="fas fa-lock prefix grey-text"></i>
+            <label data-error="wrong" data-success="right" for="userRegisterForm-pass">Your password</label>
+            <input type="password" name="userRegisterForm-pass" id="userRegisterForm-pass" class="form-control validate" placeholder="Password">
+
+            {% with messages = get_flashed_messages(category_filter=["register"]) %}
+               {% if messages %}
+                  {% for message in messages %}
+                     <small id="usererrorflashregister" class="form-text text-danger"> {{ message }} </small>
+                  {% endfor %}
+               {% endif %}
+            {% endwith %}
+
+          </div>
+          <button type="submit" class="btn btn-secondary" id="registersubmitbutton">Register</button> 
+
+        </form>
+
+      </div>
+      <!-- Body Ends -->
+      <div class="modal-footer d-flex justify-content-center">
+        <!-- <button type="submit" class="btn btn-default" id="loginsubmitbutton">Login</button> -->
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+
+<!-- Upload data form -->
+
+{{ dropzone.load_css() }}
+{{ dropzone.style('border: 2px dashed #0087F7; margin: 24px auto 24px auto; min-height: 400px; max-width: 575.98px') }}
+
+<div class="modal fade" id="dataUploadModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" data-backdrop="static">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content bg-light">
+      <div class="modal-header">
+        <h4 class="modal-title w-100 font-weight-bold">Upload Data</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalclosebutton">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <!-- Body starts -->
+      <div class="modal-body mx-3">
+
+        <!-- Form -->
+        <form action="{{ url_for('data.handle_form') }}" method="post" id="dataUploadForm">
+
+          <div class="form-group">
+            <label for="dataUploadTextArea">Description</label>
+            <!-- <input type="text" class="form-control" id="datadescription" aria-describedby="datadescriptionHelp" placeholder="Enter name" name="dataUploadTextArea"/> -->
+            <textarea name="dataUploadTextArea" class="form-control" id="dataUploadTextArea" rows="3" form="dataUploadForm"></textarea>
+            <small id="datadescriptionHelp" class="form-text text-muted">Give a characteristic description for the data set.</small>
+          </div>
+
+          <div class="form-group">
+            {{ dropzone.create() }}
+          </div>
+          
+          <img id="loadinggif" src="{{ url_for('static', filename='img/gears.gif') }}" class="loading-gif">
+          <input type="submit" id="submit" value="Upload" class="btn btn-secondary">
+          <!-- <button type="submit" class="btn btn-secondary" id="submit">Upload</button>  -->
+        </form>
+
+      </div>
+      <!-- Body Ends -->
+      <div class="modal-footer d-flex justify-content-center">
+        <!-- <button type="submit" class="btn btn-default" id="loginsubmitbutton">Login</button> -->
+      </div>
+      
+    </div>
+  </div>
+</div>
+
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -65,27 +182,42 @@
         <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Link</a>
+        {% if session["email"] %}
+          <a role="button" tabindex="0" class="nav-link" id="toggledataupload">Data Upload</a>
+        {% else %}
+          <a role="button" tabindex="0" class="nav-link disabled" id="toggledataupload">Data Upload</a>
+        {% endif %}
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Dropdown
+          Analysis
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="#">Action</a>
-          <a class="dropdown-item" href="#">Another action</a>
+          <a class="dropdown-item" href="{{ url_for('data.explorer')}}">Data</a>
           <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">Something else here</a>
+          <a class="dropdown-item" href="#">Feature Selection</a>
+          <a class="dropdown-item" href="#">Model Selection</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="#">Predict</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{{ url_for('flowchart.flowchart')}}">Data Pipeline</a>
         </div>
       </li>
       <li class="nav-item">
-        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">User Management</a>
       </li>
     </ul>
 
     <form class="form-inline my-2 my-lg-0">
-      <div class="btn text-muted">User: YourMom@hotmail.com</div>
-      <button type="button" class="btn btn-sm btn-outline-secondary" id="loginbutton">Login</button>
+      {% if session["email"] %}
+        <div class="btn text-muted">User: {{ session["username"] }}</div>
+
+        <a href="{{ url_for('users.logout_user') }}" class="btn btn-sm btn-outline-secondary" id="logoutbutton"> Logout </a>
+
+      {% else %}
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="loginbutton">Login</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="registerbutton">Register</button>
+      {% endif %}
     </form>
   </div>
 </nav>
@@ -102,35 +234,69 @@
 </div>
 
 
-<!-- Login magic -->
+<!-- DROPZONE -->
+
+{{ dropzone.load_js() }}
+{{ dropzone.config() }}
+{{ dropzone.config(custom_init='dz = this;document.getElementById("submit").addEventListener("click", function handler(e) {dz.processQueue();});',
+                     custom_options='autoProcessQueue: false, addRemoveLinks: true, parallelUploads: 20,') }}
+<!-- JAVASCRIPT -->
+
 <script type="text/javascript">
-  $('#loginbutton').click(function() {
-    $( "#basemodalLoginForm" ).modal("show");
 
-  });
+  $(document).ready(function(){
 
-  // $('#loginsubmitbutton').click(function() {
+    if ( $( "#loginbutton" ).length ) {
+      $('#loginbutton').click(function() {
+        $( "#basemodalLoginForm" ).modal("show");
+      });
+    }
 
-  //   var data = $('#userLoginForm').serialize();
+    if ( $( "#registerbutton" ).length ) {
+      $('#registerbutton').click(function() {
+        $( "#basemodalRegisterForm" ).modal("show");
+      });
+    }
 
-  //   $.ajax({
-  //       url: '/users/login',
-  //       data: data,
-  //       contentType: 'application/json;charset=UTF-8',
-  //       type: 'POST',
-  //       success: function(response) {
-  //           window.alert(response);
-  //       },
-  //       error: function(error) {
-  //           window.alert(error);
-  //       }
-  //   });
+    if ( $( "#usererrorflash" ).length ) {
+      $( "#basemodalLoginForm" ).modal("show");
 
-  //   $( "#basemodalLoginForm" ).modal("hide");
-  // });
+      $('#basemodalLoginForm').on('hidden.bs.modal', function () {
+        $( "#usererrorflash" ).remove();
+      });
+    }
 
+    if ( $( "#usererrorflashregister" ).length ) {
+      $( "#basemodalRegisterForm" ).modal("show");
 
+      $('#basemodalRegisterForm').on('hidden.bs.modal', function () {
+        $( "#usererrorflashregister" ).remove();
+      });
+    }
 
+    $("#toggledataupload").click(function() {
+        $( "#dataUploadModal" ).modal("show");
+        $( "#loadinggif" ).hide();
+        $( "#submit").show();
+        $( "#modalclosebutton").attr("disabled", false);
+        $( "#dataUploadTextArea").prop('readonly', false);
+    });
+
+    $("#submit").click(function() {
+        $( "#loadinggif" ).show();
+        $( "#submit" ).hide();
+        $( "#modalclosebutton").attr("disabled", true);
+        $( "#dataUploadTextArea").prop('readonly', true);
+    });
+    
+    $('#dataUploadModal').on('hidden.bs.modal', function () {
+        $( "#loadinggif" ).hide();
+        $( "#submit" ).show();
+        $( "#modalclosebutton").attr("disabled", false);
+        $( "#dataUploadTextArea").prop('readonly', false);
+    });
+
+});
 </script>
 
 <!-- Footer -->

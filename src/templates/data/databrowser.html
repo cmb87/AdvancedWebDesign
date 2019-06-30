@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card-columns">
+{% for dataItem in dataItems %}
+  <div class="card" id="datacard-{{loop.index}}" name="{{ dataItem._id }}" >
+    <div class="card-header">
+      <span class="badge badge-secondary">{{ dataItem._id }}</span> Data Item 
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">{{ dataItem.dataname }}</h5>
+      <p class="card-text">{{ dataItem.description }}</p>
+      <button type="button" class="btn btn-secondary edit" id="itemEditButton-{{loop.index}}">Edit</button>
+      <button type="button" class="btn btn-danger delete" id="itemDeleteButton-{{loop.index}}">Delete</button>
+      <p class="card-text"><small class="text-muted">Created {{ dataItem.created }}</small></p>
+    </div>
+  </div>            
+{% endfor %}
+</div>
+
+
+
+<script type="text/javascript">
+
+  $(document).ready(function(){
+
+    //console.log(Object.getOwnPropertyNames($('itemEditButton-1')));
+
+    $('button.btn.btn-secondary.edit').click(function() { 
+         var card = $('#'+this.id).parents()[1];
+         var dataItemId = $('#'+card.id).attr('name');
+         
+    });
+
+    $('button.btn.btn-danger.delete').click(function() { 
+         var card = $('#'+this.id).parents()[1];
+         var dataItemId = $('#'+card.id).attr('name');
+
+          $.ajax({
+              url: "{{ url_for('data.remove') }}",
+              data: {dataid: dataItemId},
+              success: function(data) {
+                alert(data);
+              }
+          });
+
+         $('#'+card.id).remove();
+    });
+
+
+});
+</script>
+
+
+{% endblock %}

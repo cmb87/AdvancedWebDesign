@@ -1,4 +1,5 @@
 import re
+import logging
 from passlib.hash import pbkdf2_sha512
 
 class Utils(object):
@@ -28,3 +29,16 @@ class Utils(object):
     def email_is_valid(email):
         pat = re.compile(r'^.+@.+\..+$')
         return True if pat.match(email) else False
+
+    @staticmethod
+    def get_logger(name):
+        logger = logging.getLogger(name)
+        logger.setLevel(logging.INFO)
+
+        formatter = logging.Formatter('[%(asctime)-8s] [%(name)-8s] [%(levelname)-1s] [%(message)s]')
+
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+
+        return logger

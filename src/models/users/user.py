@@ -1,19 +1,22 @@
 import os
 import sys
+import datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../'))
 
 from src.common.database import Database
 from src.common.utils import Utils
 import src.models.users.errors as UserErrors
-import src.models.users.constants as UserConstants
-
+import src.config as config
+# datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 class User(object):
-    def __init__(self, email, password, _id=None):
+    def __init__(self, email, password, username, _id=None, created=None):
         self.email = email
         self.password = password
         self._id = _id
+        self.username = username
+        self.created = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3] if created is None else created
 
     def __repr__(self):
         return "<User {}>".format(self.email)
@@ -28,18 +31,18 @@ class User(object):
         :return: True if valid, False otherwise
         """
 
-        user_data = Database.find(UserConstants.COLLECTION, {"email": email}, one=True)
+        user_data = Database.find(config.USERCOLLECTION, query={"email": ["=", email]}, one=True)
 
         if user_data is None:
             # Tell user email doesn't exist
-            raise UserErrors.UserNotExistsError("Your user does not exist!")
+            raise UserErrors.UserNotExistsError("User does not exist!")
         if not Utils.check_hashed_password(password, user_data["password"]):
             raise UserErrors.IncorrectPasswordError("Your password was wrong")
 
         return True
 
     @staticmethod
-    def register_user(email, password):
+    def register_user(email, password, username):
         """
         This will register the user
         :param email: string, might be invalid
@@ -47,7 +50,7 @@ class User(object):
         :return: True (User registered) False (User does already exist)
         """
 
-        user_data = Database.find(UserConstants.COLLECTION, {"email": email}, one=True)
+        user_data = Database.find(config.USERCOLLECTION, query={"email": ["=", email]}, one=True)
 
         if user_data is not None:
             raise UserErrors.UserAlreadyRegisteredError("User already exists!")
@@ -55,47 +58,39 @@ class User(object):
         if not Utils.email_is_valid(email):
             raise UserErrors.InvalidEmailError("Email is invalid!")
 
-        User(email, Utils.hash_password(password)).save_to_db()
+        User(email, Utils.hash_password(password), username).save_to_db()
 
         return True
 
     def save_to_db(self):
-        Database.insert(UserConstants.COLLECTION, [self.json()])
+        Database.insert(config.USERCOLLECTION, [self.json()])
 
     @classmethod
     def find_by_email(cls, email):
-        user = Database.find(UserConstants.COLLECTION, {"email": email}, one=True)
+        user = Database.find(config.USERCOLLECTION, query={"email": ["=", email]}, one=True)
         if user is not None:
             return cls(**user)
 
     def json(self):
         return {"_id": self._id,
                 "email": self.email,
-                "password": self.password}
-
+                "password": self.password,
+                "username": self.username,
+                "created": self.created}
 
 if __name__ == "__main__":
 
     # Create user DB
-    Database.delete_table(UserConstants.COLLECTION)
-    Database.create_table(UserConstants.COLLECTION, {"_id": "INTEGER PRIMARY KEY AUTOINCREMENT", "email": "TEXT", "password": "TEXT"})
+    #Database.delete_table(config.USERCOLLECTION)
+    #Database.create_table(config.USERCOLLECTION, {"_id": "INTEGER PRIMARY KEY AUTOINCREMENT", "email": "TEXT", "password": "TEXT"})
 
-    user = User("test@text.com", "123")
-    user.save_to_db()
+   # user = User("test@text.com", "123")
+    #user.save_to_db()
 
-    user = User("test@text.com", "123")
-    user.save_to_db()
 
-    user = User("test@text.com", "123")
-    user.save_to_db()
+    #Database.update(config.USERCOLLECTION, {"password": "yolo", "email": "lol@gmail.com"}, query={"email": ["=", "test@text.com"], "_id": ["=", 2]})
 
-    user = User("test@text.com", "123")
-    user.save_to_db()
-
-    Database.update(UserConstants.COLLECTION, {"password": "yolo", "email": "lol@gmail.com"}, query={"email": ["=", "test@text.com"], "_id": ["=", 2]})
-
-    rows = Database.find(UserConstants.COLLECTION, query={"email": ["=", "test@text.com"]}, one=True)
+    rows = Database.find(config.USERCOLLECTION, query={"email": ["=", "christian.peeren@siemens.com"]}, one=True)
     print(rows)
 
-    rows = Database.find(UserConstants.COLLECTION, query={"email": ["=", "lol@gmail.com"]}, one=True)
-    print(rows)
+

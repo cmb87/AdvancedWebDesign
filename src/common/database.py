@@ -4,22 +4,13 @@ import os
 import logging
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../'))
+from src.common.utils import Utils
 
-import src.common.constants as DBCONSTANTS
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-formatter = logging.Formatter('[%(asctime)-8s] [%(name)-8s] [%(levelname)-1s] [%(message)s]')
-
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
-
+logger = Utils.get_logger(__name__)
 
 class Database(object):
 
-    PATH2DB = DBCONSTANTS.DATABASEPATH
+    PATH2DB = "myDatabase.db"
 
     @staticmethod
     def _checkIfTableExists(tablename):
@@ -192,7 +183,7 @@ class Database(object):
         return keys, vals
 
     @staticmethod
-    def find(tablename, query, one=False):
+    def find(tablename, query=None, one=False):
         """Summary
 
         Args:
@@ -202,14 +193,19 @@ class Database(object):
         Returns:
             TYPE: Description
         """
-        keys, vals = Database._queryProcessor(query)
+        if not query is None:
+            keys, vals = Database._queryProcessor(query)
 
         con = lite.connect(Database.PATH2DB)
         try:
             with con:
                 con.row_factory = lite.Row
                 cur = con.cursor()
-                cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, ' AND '.join(keys)), vals)
+                if not query is None:
+                    cur.execute("SELECT {} FROM {} WHERE {}".format('*', tablename, ' AND '.join(keys)), vals)
+                else:
+                    cur.execute("SELECT {} FROM {}".format('*', tablename))
+
                 if one:
                     return dict(cur.fetchone())
                 else:
@@ -219,7 +215,8 @@ class Database(object):
             logger.warning("{}".format(e))
         except Exception as e:
             logger.warning("{}".format(e))
-        return False
+
+        return None
 
     @staticmethod
     def remove(tablename, query):
@@ -278,8 +275,11 @@ class Database(object):
 #                              {"name": "Skoda", "price": 10000},
 #                              {"name": "Porsche", "price": 600}])
 
-#     Database.remove("cars", query={"name": ["=", "Audi"], "price": ["<=", 3000]})
+#     #Database.remove("cars", query={"name": ["=", "Audi"], "price": ["<=", 3000]})
 
-#     rows = Database.find("cars", query={"name": ["=", "VW"]})
+#     rows = Database.find("cars", query={"name": ["=", "Audi"], "price": ["<=", 3000]}, one=True)
+#     print(rows)
+
+#     rows = Database.find("cars")
 
 #     print(rows)

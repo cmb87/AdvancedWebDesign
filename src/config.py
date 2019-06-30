@@ -1,0 +1,3 @@
+DATABASEPATH = "app.db"
+USERCOLLECTION="users"
+DATACOLLECTION="data"
