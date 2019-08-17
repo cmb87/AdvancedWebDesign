@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% for plot in plots %}
+    {% for part in plot %}
+        {{part | safe}}
+    {% endfor %}
+{% endfor %}
+
+{% endblock %}

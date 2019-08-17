@@ -53,18 +53,27 @@ def home():
     return render_template('home.html')
 
 
+@app.route('/vis')
+def vis_example():
+    return render_template('vis/vis_example.html')
+
+@app.route('/vis2')
+def vis_example2():
+    return render_template('vis/vis_example2.html')
+
 from src.models.users.views import user_blueprint
 from src.models.d3.views import d3_blueprint
 from src.models.geometry.views import webgl_blueprint
 from src.models.flowchart.views import fc_blueprint
 from src.models.data.views import data_blueprint
+from src.models.bokeh.views import bokeh_blueprint
 
 app.register_blueprint(user_blueprint, url_prefix="/users")
 app.register_blueprint(d3_blueprint, url_prefix="/d3")
 app.register_blueprint(webgl_blueprint, url_prefix="/webgl")
 app.register_blueprint(fc_blueprint, url_prefix="/flowchart")
 app.register_blueprint(data_blueprint, url_prefix="/data")
-
+app.register_blueprint(bokeh_blueprint, url_prefix="/bokeh")
 
 if __name__ == '__main__':
     app.run()
