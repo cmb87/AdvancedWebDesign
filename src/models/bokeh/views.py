@@ -9,13 +9,15 @@ bokeh_blueprint = Blueprint('bokeh', __name__)
 
 x = list(np.arange(0, 6, 0.1))
 y = list(np.sin(x) + np.random.random(len(x)))
+z = list(np.cos(x) + np.random.random(len(x)))
 
 @bokeh_blueprint.route('/data', methods=['POST'])
 def data():
     x.append(x[-1]+0.1)
     y.append(np.sin(x[-1])+np.random.random())
+    z.append(np.cos(x[-1])+np.random.random())
     #return jsonify(points=list(zip(x,y)))
-    return jsonify(x=x, y=y)
+    return jsonify(x=x, y=y, z=z)
 
 
 
@@ -24,7 +26,6 @@ def data():
 def show_dashboard():
 
     plots=[]
-    plots.append(make_plot_ajax())
     plots.append(make_plot_ajax())
     return render_template('bokeh/plot.html', plots=plots)
 
@@ -36,6 +37,7 @@ def make_plot_ajax():
     p = figure(plot_height=300, plot_width=800, background_fill_color="lightgrey",
                title="Streaming Noisy sin(x) via Ajax")
     p.circle('x', 'y', source=source)
+    p.circle('x', 'z', source=source, line_color="#3288bd", fill_color="white")
 
     p.x_range.follow = "end"
     p.x_range.follow_interval = 10
