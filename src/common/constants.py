@@ -1,1 +1,1 @@
-DATABASEPATH = "/home/cp/projects/02_WebApps/05_AdvancedWebDesign/src/common/app.db"
+DATABASEPATH = "./common/app.db"
