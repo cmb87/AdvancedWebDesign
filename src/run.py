@@ -76,4 +76,4 @@ app.register_blueprint(data_blueprint, url_prefix="/data")
 app.register_blueprint(bokeh_blueprint, url_prefix="/bokeh")
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=5000)
